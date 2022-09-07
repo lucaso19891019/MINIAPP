@@ -1,0 +1,66 @@
+KOKKOS_PATH = /home/lucaso/kokkos/kokkos #Replace with user's Kokkos path.
+KOKKOS_ARCH = "Ampere80"
+KOKKOS_CUDA_OPTIONS = "enable_lambda"
+KOKKOS_DEVICES = "CUDA"
+
+KOKKOS_CXX_STANDARD=c++17
+
+default: lbm-proxy-app
+
+DFLAGS = -DSOA
+INCLUDE = -I../ -I../src -I../src/geometries -I../src/kernels -I../src/lattices -I../src/propagation
+
+USERFLAGS += $(INCLUDE) -O3 -g -std=c++17 -Wall
+USERFLAGS += $(DFLAGS) -DUSE_KOKKOS_CUDA
+	
+CXXFLAGS = $(USERFLAGS)
+LINKFLAGS = $(USERFLAGS)
+CXX = mpicxx
+LINK = $(CXX)
+
+DEPFLAGS = -M
+LIB =
+
+include $(KOKKOS_PATH)/Makefile.kokkos
+KOKKOS_CLEAN=kokkos-clean
+
+OBJS =	Main.o \
+	Communication.o \
+	Parameters.o \
+	Geometry.o GeometryAAAB.o \
+	LatticeD3Q19.o LatticeD3Q27.o \
+	Propagation.o PropagationAA.o PropagationAB.o \
+	KernelAA_SOA_Base.o KernelAA_AOS_Base.o \
+    KernelAA_SOA_Unroll.o  \
+    KernelAB_SOA_Base.o KernelAB_AOS_Base.o \
+    KernelAB_SOA_Pull.o \
+    KernelAB_SOA_Unroll.o KernelAB_SOA_Unroll_Pull.o
+
+
+builddir=test_build
+FOBJS = $(addprefix $(builddir)/,$(OBJS))
+
+lbm-proxy-app: $(FOBJS) $(KOKKOS_LINK_DEPENDS)
+	/bin/mkdir -p $(builddir)
+	cd $(builddir); $(LINK) $(KOKKOS_LDFLAGS) $(LINKFLAGS) $(EXTRA_PATH) $(OBJS) $(KOKKOS_LIBS) $(LIB) -o $@
+
+clean: $(KOKKOS_CLEAN)
+	/bin/mkdir -p $(builddir)
+	rm -f *.o *.h *.tmp *.hpp *.a; cd $(builddir); rm -f *.o *.cuda *.host *.dat
+
+# Compilation rules
+$(builddir)/%.o:src/%.cpp $(KOKKOS_CPP_DEPENDS)
+	/bin/mkdir -p $(builddir)
+	cd $(builddir); $(CXX) $(KOKKOS_CPPFLAGS) $(KOKKOS_CXXFLAGS) $(CXXFLAGS) $(EXTRA_INC) -c ../$<
+$(builddir)/%.o:src/geometries/%.cpp $(KOKKOS_CPP_DEPENDS)
+	/bin/mkdir -p $(builddir)
+	cd $(builddir); $(CXX) $(KOKKOS_CPPFLAGS) $(KOKKOS_CXXFLAGS) $(CXXFLAGS) $(EXTRA_INC) -c ../$<
+$(builddir)/%.o:src/kernels/%.cpp $(KOKKOS_CPP_DEPENDS)
+	/bin/mkdir -p $(builddir)
+	cd $(builddir); $(CXX) $(KOKKOS_CPPFLAGS) $(KOKKOS_CXXFLAGS) $(CXXFLAGS) $(EXTRA_INC) -c ../$<
+$(builddir)/%.o:src/lattices/%.cpp
+	/bin/mkdir -p $(builddir)
+	cd $(builddir); $(CXX) $(CXXFLAGS) -c ../$<
+$(builddir)/%.o:src/propagation/%.cpp $(KOKKOS_CPP_DEPENDS)
+	/bin/mkdir -p $(builddir)
+	cd $(builddir); $(CXX) $(KOKKOS_CPPFLAGS) $(KOKKOS_CXXFLAGS) $(CXXFLAGS) $(EXTRA_INC) -c ../$<
