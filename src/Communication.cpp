@@ -342,8 +342,8 @@ void Communication::kokkosSyclNoNeighborSetup()
    bufferRecv_=sycl::malloc_device<Pdf>(commLength_,q_);
 #endif
 #if defined(USE_KOKKOS)
-   locsToSend_d_ = myViewInt("locsToSend_d_",commLength);
-   locsToRecv_d_ = myViewInt("locsToRecv_d_",commLength);
+   locsToSend_d_ = myViewInt("locsToSend_d_",commLength_);
+   locsToRecv_d_ = myViewInt("locsToRecv_d_",commLength_);
    bufferSend_ = myViewPDF("bufferSend_",commLength_);
    bufferRecv_ = myViewPDF("bufferRecv_",commLength_);
 #endif
