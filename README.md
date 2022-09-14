@@ -31,7 +31,7 @@
 ```
 ## 5. Run
 ```
-	mpiexec --np [number of processors] -ppn [number of processors per node] -envall ./set_affinity_gpu0_polaris.s ./test_build/lbm-proxy-app test/[selected input file]
+	mpiexec --np [number of processors] -ppn [number of processors per node] -envall ./set_affinity_gpu_polaris.sh ./test_build/lbm-proxy-app test/[selected input file]
 ```
 	
 
