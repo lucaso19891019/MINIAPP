@@ -17,7 +17,7 @@
 	cd build
 	module load cmake cudatoolkit-standalone/11.6.2
 	cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX="./kokkos-3.6.01" -DCMAKE_CXX_COMPILER=CC -DKokkos_ENABLE_OPENMP=OFF -DKokkos_ENABLE_SERIAL=ON -DKokkos_ARCH_ZEN2=ON -DKokkos_ARCH_AMPERE80=ON -DKokkos_ENABLE_CUDA=ON -DKokkos_ENABLE_AGGRESSIVE_VECTORIZATION=ON -DKokkos_ENABLE_TESTS=OFF -DBUILD_TESTING=OFF -DKokkos_ENABLE_CUDA_LAMBDA=ON -DCMAKE_CXX_STANDARD=17 -DKokkos_ENABLE_OPENMP=OFF -DKokkos_ENABLE_SERIAL=ON -DKokkos_ARCH_ZEN2=ON -DKokkos_ARCH_AMPERE80=ON -DKokkos_ENABLE_CUDA=ON -DKokkos_ENABLE_AGGRESSIVE_VECTORIZATION=ON -DKokkos_ENABLE_TESTS=OFF -DBUILD_TESTING=OFF -DKokkos_ENABLE_CUDA_LAMBDA=ON -DCMAKE_CXX_STANDARD=17 ..
-	make
+	make -j32
 	make install
 	export KOKKOS_HOME=$PWD/kokkos-3.6.01
 	export CPATH=$KOKKOS_HOME/include:$CPATH
@@ -31,7 +31,8 @@
 ```
 ## 5. Run
 ```
-	mpiexec --np [number of processors] -ppn [number of processors per node] -envall ./set_affinity_gpu0_polaris.s ./test_build/lbm-proxy-app test/[selected input file]
+	mpiexec --np [number of processors] -ppn [number of processors per node] -envall ./set_affinity_gpu_polaris.sh ./test_build/lbm-proxy-app test/[selected input file]
 ```
+## each node has 4 GPUs, so the number of processors per node should be no greater than 4.
 	
 
