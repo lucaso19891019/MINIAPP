@@ -418,13 +418,19 @@ void KernelAA_SOA_Unroll::timestepEvenForce(Pdf* dstrb, int startIdx, int countI
    const int nFluid = geometry_.getNumFluidPts();
    const Pdf f[3] = {_GRAVITY_, 0.0, 0.0};
 #ifdef USE_SYCL
-q_.parallel_for(sycl::range<1>{size_t(countIdx)},sycl::id<1>{size_t(startIdx)},[=](sycl::id<1> fluidIdx)
+   q_.parallel_for(sycl::nd_range{sycl::range<1>{size_t(((countIdx + (wg_size- 1)) / wg_size) * wg_size)},sycl::range<1>{wg_size}},[=](sycl::id<1> locIdx)
 #else
    for (int fluidIdx=startIdx; fluidIdx<startIdx+countIdx; fluidIdx++)
 #endif
    {
+#ifdef USE_SYCL
+      if(locIdx < countIdx){
+#endif
 
       Pdf d[_LATTICESIZE_];
+#ifdef USE_SYCL
+      auto fluidIdx=startIdx+locIdx;
+#endif
       d[1] = dstrb[nFluid * 0 + fluidIdx];
       d[0] = dstrb[nFluid * 1 + fluidIdx];
       d[3] = dstrb[nFluid * 2 + fluidIdx];
@@ -577,7 +583,7 @@ q_.parallel_for(sycl::range<1>{size_t(countIdx)},sycl::id<1>{size_t(startIdx)},[
 
    }
 #ifdef USE_SYCL
-);
+});
 #endif
 
    return;
@@ -590,15 +596,18 @@ void KernelAA_SOA_Unroll::timestepOddForce(Pdf* dstrb, int startIdx, int countId
    const int nFluid = geometry_.getNumFluidPts();
    const Pdf f[3] = {_GRAVITY_, 0.0, 0.0};
 #ifdef USE_SYCL
-q_.parallel_for(sycl::range<1>{size_t(countIdx)},sycl::id<1>{size_t(startIdx)},[=,adjacency_d_=this->geometry_.adjacency_d_](sycl::id<1> fluidIdx)
+q_.parallel_for(sycl::nd_range{sycl::range<1>{size_t(((countIdx + (wg_size- 1)) / wg_size) * wg_size)},sycl::range<1>{wg_size}},[=,adjacency_d_=this->geometry_.adjacency_d_](sycl::id<1> locIdx)
 #else
    for (int fluidIdx=startIdx; fluidIdx<startIdx+countIdx; fluidIdx++)
 #endif
    {
-
+#ifdef USE_SYCL
+      if(locIdx < countIdx){
+#endif
       int locs[_LATTICESIZE_];
 #ifdef USE_SYCL
-		locs[0] = adjacency_d_[nFluid * 0 + fluidIdx];
+      auto fluidIdx=startIdx+locIdx;
+      locs[0] = adjacency_d_[nFluid * 0 + fluidIdx];
       locs[1] = adjacency_d_[nFluid * 1 + fluidIdx];
       locs[2] = adjacency_d_[nFluid * 2 + fluidIdx];
       locs[3] = adjacency_d_[nFluid * 3 + fluidIdx];
@@ -792,7 +801,7 @@ q_.parallel_for(sycl::range<1>{size_t(countIdx)},sycl::id<1>{size_t(startIdx)},[
 
    }
 #ifdef USE_SYCL
-);
+});
 #endif
 
    return;

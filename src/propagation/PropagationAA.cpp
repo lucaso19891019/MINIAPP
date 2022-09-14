@@ -154,15 +154,25 @@ void PropagationAA::run(void)
       {
          if (t%2 == 0)
          {
+	    kernel_->wg_size=64;
             kernel_->timestepEvenForce(dstrb_d_, geometry_.getInletStart(), geometry_.getInletCount()+geometry_.getOutletCount()+geometry_.getBorderCount());
+	    q_.wait();
+	    kernel_->wg_size=32;
             kernel_->timestepEvenForce(dstrb_d_, geometry_.getBulkStart(), geometry_.getBulkCount());
+	    q_.wait();
             comm_.exchange(dstrb_d_);
+	    q_.wait();
          }
          else
          {
+	    kernel_->wg_size=64;
             kernel_->timestepOddForce(dstrb_d_, geometry_.getInletStart(), geometry_.getInletCount()+geometry_.getOutletCount()+geometry_.getBorderCount());
+	    q_.wait();
+	    kernel_->wg_size=32;
             kernel_->timestepOddForce(dstrb_d_, geometry_.getBulkStart(), geometry_.getBulkCount());
+	    q_.wait();
             comm_.exchange(dstrb_d_);
+	    q_.wait();
          }
       }
 #else
@@ -182,11 +192,7 @@ void PropagationAA::run(void)
          }
       }
 #endif
-#ifdef USE_SYCL
-      q_.wait();
-#elif defined(USE_KOKKOS)
-      Kokkos::fence();
-#endif
+
    MPI_Barrier(MPI_COMM_WORLD);
    double endTime = MPI_Wtime();
 

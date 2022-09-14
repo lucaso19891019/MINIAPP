@@ -465,8 +465,7 @@ void Communication::exchange(Pdf* dstrb)
 	q_.parallel_for(sycl::range<1>{size_t(commLength_)},[=,locsToRecv_d_=this->locsToRecv_d_,bufferRecv_=this->bufferRecv_](sycl::id<1> commIdx){
 	int dataLoc = locsToRecv_d_[commIdx];
       dstrb[dataLoc] = bufferRecv_[commIdx];
-	});
-	
+	});	
 #else
    for (int commIdx = 0; commIdx < commLength_; commIdx++)
    {

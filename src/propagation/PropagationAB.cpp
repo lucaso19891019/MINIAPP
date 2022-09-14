@@ -172,10 +172,16 @@ void PropagationAB::run(void)
 #elif defined(USE_SYCL)
 	for (int t=0; t<steps; t++)
       {
+	 kernel_->wg_size=64;
          kernel_->timestepForce(dstrb_d_, dstrb2_d_, geometry_.getBorderStart(), geometry_.getBorderCount());
+	 q_.wait();
+	 kernel_->wg_size=32;
          kernel_->timestepForce(dstrb_d_, dstrb2_d_, geometry_.getBulkStart(), geometry_.getBulkCount());
+	 q_.wait();
          comm_.exchange(dstrb2_d_);
+	 q_.wait();
          swap(dstrb_d_, dstrb2_d_);
+	 q_.wait();
       }
 #else
    
@@ -188,11 +194,7 @@ void PropagationAB::run(void)
       }
    
 #endif
-#ifdef USE_SYCL
-      q_.wait();
-#elif defined(USE_KOKKOS)
-      Kokkos::fence();
-#endif
+
    MPI_Barrier(MPI_COMM_WORLD);
    double endTime = MPI_Wtime();
    

@@ -8,7 +8,8 @@ class KernelAA
 {
    public:
 #if defined(USE_SYCL)
-      KernelAA(Lattice& lattice, Geometry& geometry,sycl::queue& q): lattice_(lattice), geometry_(geometry),q_(q) {};
+      size_t wg_size;
+      KernelAA(Lattice& lattice, Geometry& geometry,sycl::queue& q): lattice_(lattice), geometry_(geometry),q_(q) {wg_size=256;};
 #else
 	KernelAA(Lattice& lattice, Geometry& geometry): lattice_(lattice), geometry_(geometry) {};
 #endif
