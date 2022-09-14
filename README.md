@@ -33,5 +33,6 @@
 ```
 	mpiexec --np [number of processors] -ppn [number of processors per node] -envall ./set_affinity_gpu_polaris.sh ./test_build/lbm-proxy-app test/[selected input file]
 ```
+## each node has 4 GPUs, so the number of processors per node should be no greater than 4.
 	
 
