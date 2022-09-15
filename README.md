@@ -27,7 +27,7 @@
 ```
 	cd ~/MINIAPP
 	cmake -DCMAKE_CXX_COMPILER=CC -DCMAKE_C_COMPILER=cc -DCMAKE_CXX_STANDARD=17 -DCUDA=ON -S src/ -B test_build/
-	make -C test_build/
+	make -C test_build/ -j16
 ```
 # II. LBM Proxy App (Kokkos with SYCL backend) on Polaris
 ## 1. Log in Polaris
@@ -48,7 +48,7 @@
 	cd build
 	module load cmake mpiwrappers/cray-mpich-llvm llvm-sycl/2022-06
 	module load nvhpc/21.9
-	cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX="./kokkos-3.6.01" -DCMAKE_CXX_COMPILER=clang++ -DKokkos_ENABLE_OPENMP=OFF -DKokkos_ENABLE_SERIAL=ON -DKokkos_ARCH_ZEN2=ON -DKokkos_ARCH_AMPERE80=ON -DKokkos_ENABLE_SYCL=ON -DKokkos_ENABLE_AGGRESSIVE_VECTORIZATION=ON -DKokkos_ENABLE_TESTS=OFF -DBUILD_TESTING=OFF -DCMAKE_CXX_STANDARD=17 ..
+	cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX="./kokkos-3.6.01" -DCMAKE_CXX_COMPILER=clang++ -DKokkos_ENABLE_OPENMP=OFF -DKokkos_ENABLE_SERIAL=ON -DKokkos_ARCH_ZEN2=ON -DKokkos_ARCH_AMPERE80=ON -DKokkos_ENABLE_SYCL=ON -DKokkos_ENABLE_AGGRESSIVE_VECTORIZATION=ON -DKokkos_ENABLE_TESTS=OFF -DBUILD_TESTING=OFF -DKokkos_ENABLE_UNSUPPORTED_ARCHS:BOOL=ON -DCMAKE_CXX_STANDARD=17 ..
 	make -j32
 	make install
 	export KOKKOS_HOME=$PWD/kokkos-3.6.01
@@ -59,7 +59,7 @@
 ```
 	cd ~/MINIAPP
 	cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_STANDARD=17 -DSYCL=ON -S src/ -B test_build/
-	make -C test_build/
+	make -C test_build/ -j16
 ```
 # III. Run
 ```
