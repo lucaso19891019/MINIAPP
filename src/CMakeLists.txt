@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.23)
 project(lbm-proxy-app)
+
+#if(Kokkos_SYCL OR Kokkos_CUDA)
 set(Kokkos_DIR "$ENV{KOKKOS_HOME}/lib64/cmake/Kokkos")
 find_package(Kokkos REQUIRED)
+#endif()
 
 set(lbminiapp_SOURCE_DIR ".")
 set(geometries_DIR "${lbminiapp_SOURCE_DIR}/geometries")
@@ -40,15 +43,24 @@ set(propagation_SRCS
 set(SOURCE_FILES ${top_SRCS} ${geometries_SRCS} ${kernels_SRCS} ${lattices_SRCS} ${propagation_SRCS})
 
 add_executable(lbm-proxy-app ${SOURCE_FILES})
-target_link_libraries(lbm-proxy-app Kokkos::kokkos)
 
-if(SYCL)
+#if(Kokkos_SYCL OR Kokkos_CUDA)
+target_link_libraries(lbm-proxy-app Kokkos::kokkos)
+#endif()
+
+if(Kokkos_SYCL OR SYCL)
         set(GTL_DIR "/opt/cray/pe/mpich/8.1.16/gtl")
 	target_link_directories(lbm-proxy-app PUBLIC "${GTL_DIR}/lib")
 	target_link_libraries(lbm-proxy-app mpi_gtl_cuda)
+endif()
+
+if(SYCL)
+	target_compile_options(lbm-proxy-app PUBLIC -DSOA -DUSE_SYCL -fsycl -fsycl-targets=nvptx64-nvidia-cuda)
+	target_link_options(lbm-proxy-app PUBLIC -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend "--cuda-gpu-arch=sm_80")
+elseif(Kokkos_SYCL)
 	target_compile_options(lbm-proxy-app PUBLIC -DSOA -DUSE_KOKKOS_SYCL -fsycl-targets=nvptx64-nvidia-cuda)
-	target_link_options(lbm-proxy-app PUBLIC -DSOA -DUSE_KOKKOS_SYCL -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend "--cuda-gpu-arch=sm_80")
-elseif(CUDA)
+	target_link_options(lbm-proxy-app PUBLIC -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend "--cuda-gpu-arch=sm_80")
+elseif(Kokkos_CUDA)
 	target_compile_options(lbm-proxy-app PUBLIC -DSOA -DUSE_KOKKOS_CUDA)
 endif()
 

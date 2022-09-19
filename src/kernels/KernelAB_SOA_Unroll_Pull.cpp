@@ -224,18 +224,26 @@ void KernelAB_SOA_Unroll_Pull::timestepForce(Pdf* dstrb_src, Pdf* dstrb_tgt, int
    int nFluid = geometry_.getNumFluidPts();
    const Pdf f[3] = {_GRAVITY_, 0.0, 0.0};
 #ifdef USE_SYCL
-      q_.parallel_for(sycl::nd_range{sycl::range<1>{size_t(((countIdx + (wg_size- 1)) / wg_size) * wg_size)},sycl::range<1>{wg_size}},[=,adjacency_d_=this->geometry_.adjacency_d_](sycl::id<1> locIdx)
+      q_.parallel_for(
+#ifdef HAND
+                   sycl::nd_range{sycl::range<1>{size_t(((countIdx + (wg_size- 1)) / wg_size) * wg_size)},sycl::range<1>{wg_size}},[=,adjacency_d_=this->geometry_.adjacency_d_](sycl::id<1> locIdx)
+#else
+                   sycl::range<1>{size_t(countIdx)},sycl::id<1>{size_t(startIdx)},[=,adjacency_d_=this->geometry_.adjacency_d_](sycl::id<1> fluidIdx)
+#endif
+		 
 #else
       for (int fluidIdx=startIdx; fluidIdx<startIdx+countIdx; fluidIdx++)
 #endif
       {
-#ifdef USE_SYCL
+#if (defined(USE_SYCL) && defined(HAND))
       if(locIdx < countIdx){
 #endif
 
       Pdf d[_LATTICESIZE_];
 #ifdef USE_SYCL
+#ifdef HAND
       auto fluidIdx=startIdx+locIdx;
+#endif
       d[0] = dstrb_src[adjacency_d_[nFluid * 0 + fluidIdx]];
       d[1] = dstrb_src[adjacency_d_[nFluid * 1 + fluidIdx]];
       d[2] = dstrb_src[adjacency_d_[nFluid * 2 + fluidIdx]];
@@ -408,11 +416,12 @@ void KernelAB_SOA_Unroll_Pull::timestepForce(Pdf* dstrb_src, Pdf* dstrb_tgt, int
       dstrb_tgt[nFluid * 16 + fluidIdx] = d[16];
       dstrb_tgt[nFluid * 17 + fluidIdx] = d[17];
       dstrb_tgt[nFluid * 18 + fluidIdx] = d[18];
-#ifdef USE_SYCL
-      }
-#endif
+
    }
 #ifdef USE_SYCL
+#ifdef HAND
+   }
+#endif
 );
 #endif
 

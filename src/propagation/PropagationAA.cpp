@@ -154,10 +154,14 @@ void PropagationAA::run(void)
       {
          if (t%2 == 0)
          {
+#ifdef HAND
 	    kernel_->wg_size=64;
+#endif
             kernel_->timestepEvenForce(dstrb_d_, geometry_.getInletStart(), geometry_.getInletCount()+geometry_.getOutletCount()+geometry_.getBorderCount());
 	    q_.wait();
+#ifdef HAND
 	    kernel_->wg_size=32;
+#endif
             kernel_->timestepEvenForce(dstrb_d_, geometry_.getBulkStart(), geometry_.getBulkCount());
 	    q_.wait();
             comm_.exchange(dstrb_d_);
@@ -165,10 +169,14 @@ void PropagationAA::run(void)
          }
          else
          {
+#ifdef HAND
 	    kernel_->wg_size=64;
+#endif
             kernel_->timestepOddForce(dstrb_d_, geometry_.getInletStart(), geometry_.getInletCount()+geometry_.getOutletCount()+geometry_.getBorderCount());
 	    q_.wait();
+#ifdef HAND
 	    kernel_->wg_size=32;
+#endif
             kernel_->timestepOddForce(dstrb_d_, geometry_.getBulkStart(), geometry_.getBulkCount());
 	    q_.wait();
             comm_.exchange(dstrb_d_);

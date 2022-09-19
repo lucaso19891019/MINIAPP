@@ -172,10 +172,14 @@ void PropagationAB::run(void)
 #elif defined(USE_SYCL)
 	for (int t=0; t<steps; t++)
       {
+#ifdef HAND
 	 kernel_->wg_size=64;
+#endif
          kernel_->timestepForce(dstrb_d_, dstrb2_d_, geometry_.getBorderStart(), geometry_.getBorderCount());
 	 q_.wait();
+#ifdef HAND
 	 kernel_->wg_size=32;
+#endif
          kernel_->timestepForce(dstrb_d_, dstrb2_d_, geometry_.getBulkStart(), geometry_.getBulkCount());
 	 q_.wait();
          comm_.exchange(dstrb2_d_);
