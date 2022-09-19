@@ -26,7 +26,7 @@
 ## 4. Compile the mini app.
 ```
 	cd ~/MINIAPP
-	cmake -DCMAKE_CXX_COMPILER=CC -DCMAKE_C_COMPILER=cc -DCMAKE_CXX_STANDARD=17 -DCUDA=ON -S src/ -B test_build/
+	cmake -DCMAKE_CXX_COMPILER=CC -DCMAKE_C_COMPILER=cc -DCMAKE_CXX_STANDARD=17 -DKokkos_CUDA=ON -S src/ -B test_build/
 	make -C test_build/ -j16
 ```
 # II. LBM Proxy App (Kokkos with SYCL backend) on Polaris
@@ -58,7 +58,7 @@
 ## 4. Compile the mini app.
 ```
 	cd ~/MINIAPP
-	cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_STANDARD=17 -DSYCL=ON -S src/ -B test_build/
+	cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_STANDARD=17 -DKokkos_SYCL=ON -S src/ -B test_build/
 	make -C test_build/ -j16
 ```
 # III. Run
