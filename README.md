@@ -67,9 +67,8 @@
 	ssh [username]@polaris.alcf.anl.gov
 ```
 ## and enter passcode.
-## 2. Download kokkos and this mini app.
+## 2. Download this mini app.
 ```
-	git clone -b develop https://github.com/kokkos/kokkos kokkos-dev
 	git clone https://github.com/lucaso19891019/MINIAPP
 ```
 ## 3. Go to computing node and compile.
