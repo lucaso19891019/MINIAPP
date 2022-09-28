@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 project(lbm-proxy-app)
 
-if(Kokkos_SYCL OR Kokkos_CUDA)
+if(Kokkos_SYCL OR Kokkos_CUDA OR Kokkos_OMPT)
 set(Kokkos_DIR "$ENV{KOKKOS_HOME}/lib64/cmake/Kokkos")
 find_package(Kokkos REQUIRED)
 endif()
@@ -44,22 +44,51 @@ set(SOURCE_FILES ${top_SRCS} ${geometries_SRCS} ${kernels_SRCS} ${lattices_SRCS}
 
 add_executable(lbm-proxy-app ${SOURCE_FILES})
 
-if(Kokkos_SYCL OR Kokkos_CUDA)
+if(Kokkos_SYCL OR Kokkos_CUDA OR Kokkos_OMPT)
 target_link_libraries(lbm-proxy-app Kokkos::kokkos)
 endif()
 
 if(Kokkos_SYCL OR SYCL)
+if(SYCL_POLARIS)
         set(GTL_DIR "/opt/cray/pe/mpich/8.1.16/gtl")
 	target_link_directories(lbm-proxy-app PUBLIC "${GTL_DIR}/lib")
 	target_link_libraries(lbm-proxy-app mpi_gtl_cuda)
 endif()
 
+
+if(SYCL_DEVICE_NV_A100)
+	set(SYCL_FLAGS "-fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend \"--cuda-gpu-arch=sm_80\"")
+elseif(SYCL_DEVICE_NV_V100)
+	set(SYCL_FLAGS "-fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend \"--cuda-gpu-arch=sm_70\"")
+elseif(SYCL_DEVICE_INTEL)
+	set(SYCL_FLAGS "-cxx=dpcpp")
+endif()
+
+if(SYCL AND SYCL_HAND)
+	set(SYCL_HAND_FLAG "-DHAND")
+if(SYCL_LIKE_KOKKOS)
+	set(SYLC_HAND_FLAG "-DHAND -DLIKE_KOKKOS")
+endif()
+else()
+	set(SYCL_HAND_FLAG "")
+endif()
+
+endif()
+
+
+if(Kokkos_OMPT)
+	set(OMPT_FLAGS "-cxx=icpx -fiopenmp -fPIC -Wno-openmp-mapping -D__STRICT_ANSI__ -fopenmp-targets=spir64")
+endif()
+
 if(SYCL)
-	target_compile_options(lbm-proxy-app PUBLIC -DSOA -DUSE_SYCL -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend "--cuda-gpu-arch=sm_80")
-	target_link_options(lbm-proxy-app PUBLIC -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend "--cuda-gpu-arch=sm_80")
+	target_compile_options(lbm-proxy-app PUBLIC -DSOA -DUSE_SYCL "${SYCL_HAND_FLAG}" "${SYCL_FLAGS}")
+	target_link_options(lbm-proxy-app PUBLIC "${SYCL_FLAGS}")
 elseif(Kokkos_SYCL)
-	target_compile_options(lbm-proxy-app PUBLIC -DSOA -DUSE_KOKKOS_SYCL -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend "--cuda-gpu-arch=sm_80")
-	target_link_options(lbm-proxy-app PUBLIC -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend "--cuda-gpu-arch=sm_80")
+	target_compile_options(lbm-proxy-app PUBLIC -DSOA -DUSE_KOKKOS_SYCL "${SYCL_FLAGS}")
+	target_link_options(lbm-proxy-app PUBLIC "${SYCL_FLAGS}")
+elseif(Kokkos_OMPT)
+	target_compile_options(lbm-proxy-app PUBLIC -DSOA -DUSE_KOKKOS_OPENMPTARGET "${OMPT_FLAGS}")
+	target_link_options(lbm-proxy-app PUBLIC "${OMPT_FLAGS}")
 elseif(Kokkos_CUDA)
 	target_compile_options(lbm-proxy-app PUBLIC -DSOA -DUSE_KOKKOS_CUDA)
 endif()

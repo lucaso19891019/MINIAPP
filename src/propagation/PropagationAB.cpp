@@ -170,14 +170,17 @@ void PropagationAB::run(void)
          swap(dstrb_d_, dstrb2_d_);
       }
 #elif defined(USE_SYCL)
+#ifdef HAND
+            kernel_->wg_size=256;
+#endif
 	for (int t=0; t<steps; t++)
       {
-#ifdef HAND
+#if defined(HAND)&& defined(LIKE_KOKKOS)
 	 kernel_->wg_size=64;
 #endif
          kernel_->timestepForce(dstrb_d_, dstrb2_d_, geometry_.getBorderStart(), geometry_.getBorderCount());
 	 q_.wait();
-#ifdef HAND
+#if defined(HAND)&& defined(LIKE_KOKKOS)
 	 kernel_->wg_size=32;
 #endif
          kernel_->timestepForce(dstrb_d_, dstrb2_d_, geometry_.getBulkStart(), geometry_.getBulkCount());

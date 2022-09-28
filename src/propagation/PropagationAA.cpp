@@ -150,16 +150,19 @@ void PropagationAA::run(void)
          }
       }
 #elif defined(USE_SYCL)
+#ifdef HAND
+      kernel_->wg_size=256;
+#endif
 	  for (int t=0; t<steps; t++)
       {
          if (t%2 == 0)
          {
-#ifdef HAND
+#if defined(HAND)&& defined(LIKE_KOKKOS)
 	    kernel_->wg_size=64;
 #endif
             kernel_->timestepEvenForce(dstrb_d_, geometry_.getInletStart(), geometry_.getInletCount()+geometry_.getOutletCount()+geometry_.getBorderCount());
 	    q_.wait();
-#ifdef HAND
+#if defined(HAND)&& defined(LIKE_KOKKOS)
 	    kernel_->wg_size=32;
 #endif
             kernel_->timestepEvenForce(dstrb_d_, geometry_.getBulkStart(), geometry_.getBulkCount());
@@ -169,12 +172,12 @@ void PropagationAA::run(void)
          }
          else
          {
-#ifdef HAND
+#if defined(HAND)&& defined(LIKE_KOKKOS)
 	    kernel_->wg_size=64;
 #endif
             kernel_->timestepOddForce(dstrb_d_, geometry_.getInletStart(), geometry_.getInletCount()+geometry_.getOutletCount()+geometry_.getBorderCount());
 	    q_.wait();
-#ifdef HAND
+#if defined(HAND)&& defined(LIKE_KOKKOS)
 	    kernel_->wg_size=32;
 #endif
             kernel_->timestepOddForce(dstrb_d_, geometry_.getBulkStart(), geometry_.getBulkCount());
