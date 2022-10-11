@@ -22,13 +22,15 @@ class KernelAA
 };
 
       virtual void setup() = 0;
-#ifdef USE_KOKKOS
+#if defined (USE_KOKKOS)
       virtual void timestepEvenForce(myViewPDF dstrb, int startIdx, int countIdx) = 0;
       virtual void timestepOddForce(myViewPDF dstrb, int startIdx, int countIdx) = 0;
+#elif defined(USE_SYCL)
+      virtual void timestepEvenForce(Pdf* dstrb, int startIdx, int countIdx,sycl::queue ) = 0;
+      virtual void timestepOddForce(Pdf* dstrb, int startIdx, int countIdx,sycl::queue ) = 0;
 #else
       virtual void timestepEvenForce(Pdf* dstrb, int startIdx, int countIdx) = 0;
       virtual void timestepOddForce(Pdf* dstrb, int startIdx, int countIdx) = 0;
-
 #endif
 
    protected:

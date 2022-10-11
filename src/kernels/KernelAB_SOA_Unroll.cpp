@@ -220,12 +220,16 @@ void KernelAB_SOA_Unroll::timestepForce(myViewPDF dstrb_src, myViewPDF dstrb_tgt
    return;
 }
 #else
+#ifdef USE_SYCL
+void KernelAB_SOA_Unroll::timestepForce(Pdf* dstrb_src, Pdf* dstrb_tgt, int startIdx, int countIdx,sycl::queue q)
+#else
 void KernelAB_SOA_Unroll::timestepForce(Pdf* dstrb_src, Pdf* dstrb_tgt, int startIdx, int countIdx)
+#endif
 {
    int nFluid = geometry_.getNumFluidPts();
    const Pdf f[3] = {_GRAVITY_, 0.0, 0.0};
 #ifdef USE_SYCL
-   q_.parallel_for(
+   q.parallel_for(
 #ifdef HAND
                    sycl::nd_range{sycl::range<1>{size_t(((countIdx + (wg_size- 1)) / wg_size) * wg_size)},sycl::range<1>{wg_size}},[=,adjacency_d_=this->geometry_.adjacency_d_](sycl::id<1> locIdx)
 #else

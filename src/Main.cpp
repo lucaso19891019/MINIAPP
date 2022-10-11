@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 	Kokkos::initialize(argc, argv);
    {
 #elif defined(USE_SYCL)
-	sycl::queue q(sycl::default_selector{});
+	sycl::queue q;
 	{
 #endif
 

@@ -423,10 +423,11 @@ void Communication::exchange(Pdf* dstrb)
 
 #else
 #if defined(USE_SYCL)
+   if(commLength_!=0){
 	q_.parallel_for(sycl::range<1>{size_t(commLength_)},[=,locsToSend_d_=this->locsToSend_d_,bufferSend_=this->bufferSend_](sycl::id<1> commIdx){
 	int dataLoc = locsToSend_d_[commIdx];
       bufferSend_[commIdx] = dstrb[dataLoc];
-	});
+	});}
 	q_.wait();
 #else
    for (int commIdx = 0; commIdx < commLength_; commIdx++)
@@ -462,10 +463,11 @@ void Communication::exchange(Pdf* dstrb)
    delete[] recvRequest;
 #if defined(USE_SYCL)
 	q_.wait();
+	if(commLength_!=0){
 	q_.parallel_for(sycl::range<1>{size_t(commLength_)},[=,locsToRecv_d_=this->locsToRecv_d_,bufferRecv_=this->bufferRecv_](sycl::id<1> commIdx){
 	int dataLoc = locsToRecv_d_[commIdx];
       dstrb[dataLoc] = bufferRecv_[commIdx];
-	});	
+	});}	
 #else
    for (int commIdx = 0; commIdx < commLength_; commIdx++)
    {

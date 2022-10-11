@@ -412,13 +412,17 @@ void KernelAA_SOA_Unroll::timestepOddForce(myViewPDF dstrb, int startIdx, int co
 }
 
 #else
+#ifdef USE_SYCL
+void KernelAA_SOA_Unroll::timestepEvenForce(Pdf* dstrb, int startIdx, int countIdx,sycl::queue q)
+#else
 void KernelAA_SOA_Unroll::timestepEvenForce(Pdf* dstrb, int startIdx, int countIdx)
+#endif
 {
 
    const int nFluid = geometry_.getNumFluidPts();
    const Pdf f[3] = {_GRAVITY_, 0.0, 0.0};
 #ifdef USE_SYCL
-   q_.parallel_for(
+   q.parallel_for(
 #ifdef HAND
 		   sycl::nd_range{sycl::range<1>{size_t(((countIdx + (wg_size- 1)) / wg_size) * wg_size)},sycl::range<1>{wg_size}},[=](sycl::id<1> locIdx)
 #else
@@ -599,13 +603,17 @@ void KernelAA_SOA_Unroll::timestepEvenForce(Pdf* dstrb, int startIdx, int countI
 }
 
 /******************************************************************************/
+#ifdef USE_SYCL
+void KernelAA_SOA_Unroll::timestepOddForce(Pdf* dstrb, int startIdx, int countIdx,sycl::queue q)
+#else
 void KernelAA_SOA_Unroll::timestepOddForce(Pdf* dstrb, int startIdx, int countIdx)
+#endif
 {
 
    const int nFluid = geometry_.getNumFluidPts();
    const Pdf f[3] = {_GRAVITY_, 0.0, 0.0};
 #ifdef USE_SYCL
-q_.parallel_for(
+q.parallel_for(
 #ifdef HAND
                    sycl::nd_range{sycl::range<1>{size_t(((countIdx + (wg_size- 1)) / wg_size) * wg_size)},sycl::range<1>{wg_size}},[=,adjacency_d_=this->geometry_.adjacency_d_](sycl::id<1> locIdx)
 #else

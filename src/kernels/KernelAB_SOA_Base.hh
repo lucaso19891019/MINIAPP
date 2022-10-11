@@ -16,11 +16,12 @@ class KernelAB_SOA_Base : public KernelAB
       ~KernelAB_SOA_Base(void) {};
 
       void setup();
-#ifdef USE_KOKKOS
-      void timestepForce(myViewPDF dstrb_src, myViewPDF dstrb_tgt, int startIdx, int countIdx);
+#if defined (USE_KOKKOS)
+      virtual void timestepForce(myViewPDF dstrb_src, myViewPDF dstrb_tgt, int startIdx, int countIdx) ;
+#elif defined(USE_SYCL)
+      virtual void timestepForce(Pdf* dstrb_src, Pdf* dstrb_tgt, int startIdx, int countIdx,sycl::queue) ;
 #else
-      void timestepForce(Pdf* dstrb_src, Pdf* dstrb_tgt, int startIdx, int countIdx);
-
+      virtual void timestepForce(Pdf* dstrb_src, Pdf* dstrb_tgt, int startIdx, int countIdx) ;
 #endif
 
    protected:

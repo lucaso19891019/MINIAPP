@@ -166,29 +166,31 @@ void PropagationAB::run(void)
       {
          kernel_->timestepForce(dstrb_d_, dstrb2_d_, geometry_.getBorderStart(), geometry_.getBorderCount());
          kernel_->timestepForce(dstrb_d_, dstrb2_d_, geometry_.getBulkStart(), geometry_.getBulkCount());
+	Kokkos::fence();
          comm_.exchange(dstrb2_d_.data());
+	Kokkos::fence();
          swap(dstrb_d_, dstrb2_d_);
       }
 #elif defined(USE_SYCL)
+	sycl::queue qBoundary;
 #ifdef HAND
-            kernel_->wg_size=256;
+            kernel_->wg_size=128;
 #endif
 	for (int t=0; t<steps; t++)
       {
 #if defined(HAND)&& defined(LIKE_KOKKOS)
 	 kernel_->wg_size=64;
 #endif
-         kernel_->timestepForce(dstrb_d_, dstrb2_d_, geometry_.getBorderStart(), geometry_.getBorderCount());
-	 q_.wait();
+         kernel_->timestepForce(dstrb_d_, dstrb2_d_, geometry_.getBorderStart(), geometry_.getBorderCount(),qBoundary);
 #if defined(HAND)&& defined(LIKE_KOKKOS)
 	 kernel_->wg_size=32;
 #endif
-         kernel_->timestepForce(dstrb_d_, dstrb2_d_, geometry_.getBulkStart(), geometry_.getBulkCount());
+         kernel_->timestepForce(dstrb_d_, dstrb2_d_, geometry_.getBulkStart(), geometry_.getBulkCount(),q_);
 	 q_.wait();
+	qBoundary.wait();
          comm_.exchange(dstrb2_d_);
 	 q_.wait();
          swap(dstrb_d_, dstrb2_d_);
-	 q_.wait();
       }
 #else
    

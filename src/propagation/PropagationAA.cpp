@@ -140,18 +140,23 @@ void PropagationAA::run(void)
          {
             kernel_->timestepEvenForce(dstrb_d_, geometry_.getInletStart(), geometry_.getInletCount()+geometry_.getOutletCount()+geometry_.getBorderCount());
             kernel_->timestepEvenForce(dstrb_d_, geometry_.getBulkStart(), geometry_.getBulkCount());
+	    Kokkos::fence();
             comm_.exchange(dstrb_d_.data());
+	    Kokkos::fence();
          }
          else
          {
             kernel_->timestepOddForce(dstrb_d_, geometry_.getInletStart(), geometry_.getInletCount()+geometry_.getOutletCount()+geometry_.getBorderCount());
             kernel_->timestepOddForce(dstrb_d_, geometry_.getBulkStart(), geometry_.getBulkCount());
+	    Kokkos::fence();
             comm_.exchange(dstrb_d_.data());
+	    Kokkos::fence();
          }
       }
 #elif defined(USE_SYCL)
+	sycl::queue qBoundary;
 #ifdef HAND
-      kernel_->wg_size=256;
+      kernel_->wg_size=128;
 #endif
 	  for (int t=0; t<steps; t++)
       {
@@ -160,12 +165,12 @@ void PropagationAA::run(void)
 #if defined(HAND)&& defined(LIKE_KOKKOS)
 	    kernel_->wg_size=64;
 #endif
-            kernel_->timestepEvenForce(dstrb_d_, geometry_.getInletStart(), geometry_.getInletCount()+geometry_.getOutletCount()+geometry_.getBorderCount());
-	    q_.wait();
+            kernel_->timestepEvenForce(dstrb_d_, geometry_.getInletStart(), geometry_.getInletCount()+geometry_.getOutletCount()+geometry_.getBorderCount(),qBoundary);
 #if defined(HAND)&& defined(LIKE_KOKKOS)
 	    kernel_->wg_size=32;
 #endif
-            kernel_->timestepEvenForce(dstrb_d_, geometry_.getBulkStart(), geometry_.getBulkCount());
+            kernel_->timestepEvenForce(dstrb_d_, geometry_.getBulkStart(), geometry_.getBulkCount(),q_);
+	qBoundary.wait();
 	    q_.wait();
             comm_.exchange(dstrb_d_);
 	    q_.wait();
@@ -175,13 +180,13 @@ void PropagationAA::run(void)
 #if defined(HAND)&& defined(LIKE_KOKKOS)
 	    kernel_->wg_size=64;
 #endif
-            kernel_->timestepOddForce(dstrb_d_, geometry_.getInletStart(), geometry_.getInletCount()+geometry_.getOutletCount()+geometry_.getBorderCount());
-	    q_.wait();
+            kernel_->timestepOddForce(dstrb_d_, geometry_.getInletStart(), geometry_.getInletCount()+geometry_.getOutletCount()+geometry_.getBorderCount(),qBoundary);
 #if defined(HAND)&& defined(LIKE_KOKKOS)
 	    kernel_->wg_size=32;
 #endif
-            kernel_->timestepOddForce(dstrb_d_, geometry_.getBulkStart(), geometry_.getBulkCount());
+            kernel_->timestepOddForce(dstrb_d_, geometry_.getBulkStart(), geometry_.getBulkCount(),q_);
 	    q_.wait();
+	qBoundary.wait();
             comm_.exchange(dstrb_d_);
 	    q_.wait();
          }

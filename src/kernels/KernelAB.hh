@@ -22,10 +22,11 @@ class KernelAB
 };
 
       virtual void setup() = 0;
-#ifdef USE_KOKKOS
-         virtual void timestepForce(myViewPDF dstrb_src, myViewPDF dstrb_tgt, int startIdx, int countIdx) = 0;
+#if defined (USE_KOKKOS)
+      virtual void timestepForce(myViewPDF dstrb_src, myViewPDF dstrb_tgt, int startIdx, int countIdx) = 0;
+#elif defined(USE_SYCL)
+      virtual void timestepForce(Pdf* dstrb_src, Pdf* dstrb_tgt, int startIdx, int countIdx,sycl::queue) = 0;
 #else
-    
       virtual void timestepForce(Pdf* dstrb_src, Pdf* dstrb_tgt, int startIdx, int countIdx) = 0;
 #endif
    protected:
@@ -38,6 +39,7 @@ class KernelAB
 #endif
 #ifdef USE_SYCL
 	sycl::queue& q_;
+
       Pdf* stencil_d_;
       Pdf* weight_d_;
 #endif

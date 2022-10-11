@@ -15,13 +15,15 @@ class KernelAA_SOA_Unroll : public KernelAA
       ~KernelAA_SOA_Unroll(void) {};
 
       void setup();
-#ifdef USE_KOKKOS
-      virtual void timestepEvenForce(myViewPDF dstrb, int startIdx, int countIdx) ;
-      virtual void timestepOddForce(myViewPDF dstrb, int startIdx, int countIdx) ;
+#if defined (USE_KOKKOS)
+      virtual void timestepEvenForce(myViewPDF dstrb, int startIdx, int countIdx);
+      virtual void timestepOddForce(myViewPDF dstrb, int startIdx, int countIdx);
+#elif defined(USE_SYCL)
+      virtual void timestepEvenForce(Pdf* dstrb, int startIdx, int countIdx,sycl::queue ) ;
+      virtual void timestepOddForce(Pdf* dstrb, int startIdx, int countIdx,sycl::queue) ;
 #else
       virtual void timestepEvenForce(Pdf* dstrb, int startIdx, int countIdx) ;
       virtual void timestepOddForce(Pdf* dstrb, int startIdx, int countIdx) ;
-
 #endif
 
    protected:

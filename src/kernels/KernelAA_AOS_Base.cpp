@@ -171,12 +171,17 @@ void KernelAA_AOS_Base::timestepOddForce(myViewPDF dstrb, int startIdx, int coun
 }
 
 #else
+#ifdef USE_SYCL
+void KernelAA_AOS_Base::timestepEvenForce(Pdf* dstrb, int startIdx, int countIdx,sycl::queue q)
+#else
 void KernelAA_AOS_Base::timestepEvenForce(Pdf* dstrb, int startIdx, int countIdx)
+#endif
+
 {
 
    const Pdf f[3] = {_GRAVITY_, 0.0, 0.0};
 #ifdef USE_SYCL
-q_.parallel_for(sycl::range<1>{size_t(countIdx)},sycl::id<1>{size_t(startIdx)},[=,stencil_d_=this->stencil_d_,weight_d_=this->weight_d_,opp_d_=this->opp_d_](sycl::id<1> fluidIdx)
+q.parallel_for(sycl::range<1>{size_t(countIdx)},sycl::id<1>{size_t(startIdx)},[=,stencil_d_=this->stencil_d_,weight_d_=this->weight_d_,opp_d_=this->opp_d_](sycl::id<1> fluidIdx)
 #else
    for (int fluidIdx=startIdx; fluidIdx<startIdx+countIdx; fluidIdx++)
 #endif
@@ -255,12 +260,16 @@ q_.parallel_for(sycl::range<1>{size_t(countIdx)},sycl::id<1>{size_t(startIdx)},[
 
 
 /******************************************************************************/
+#ifdef USE_SYCL
+void KernelAA_AOS_Base::timestepOddForce(Pdf* dstrb, int startIdx, int countIdx,sycl::queue q)
+#else
 void KernelAA_AOS_Base::timestepOddForce(Pdf* dstrb, int startIdx, int countIdx)
+#endif
 {
 
    const Pdf f[3] = {_GRAVITY_, 0.0, 0.0};
 #ifdef USE_SYCL
-	q_.parallel_for(sycl::range<1>{size_t(countIdx)},sycl::id<1>{size_t(startIdx)},[=,adjacency_d_=this->geometry_.adjacency_d_,stencil_d_=this->stencil_d_,weight_d_=this->weight_d_,opp_d_=this->opp_d_](sycl::id<1> fluidIdx)
+	q.parallel_for(sycl::range<1>{size_t(countIdx)},sycl::id<1>{size_t(startIdx)},[=,adjacency_d_=this->geometry_.adjacency_d_,stencil_d_=this->stencil_d_,weight_d_=this->weight_d_,opp_d_=this->opp_d_](sycl::id<1> fluidIdx)
 #else
    for (int fluidIdx=startIdx; fluidIdx<startIdx+countIdx; fluidIdx++)
 #endif

@@ -6,17 +6,17 @@
 #if defined(USE_KOKKOS_CUDA)
 #include <Kokkos_Core.hpp>
 #define myDeviceMemorySpace Kokkos::CudaSpace
-#define myPolicy Kokkos::RangePolicy<Kokkos::Cuda::execution_space>
+#define myPolicy Kokkos::RangePolicy<Kokkos::Cuda::execution_space,Kokkos::Schedule<Kokkos::Dynamic>>
 #define USE_KOKKOS
 #elif defined(USE_KOKKOS_SYCL)
 #include <Kokkos_Core.hpp>
 #define myDeviceMemorySpace Kokkos::Experimental::SYCLDeviceUSMSpace
-#define myPolicy Kokkos::RangePolicy<myDeviceMemorySpace::execution_space>
+#define myPolicy Kokkos::RangePolicy<myDeviceMemorySpace::execution_space,Kokkos::Schedule<Kokkos::Dynamic>>
 #define USE_KOKKOS
 #elif defined(USE_KOKKOS_OPENMPTARGET)
 #include <Kokkos_Core.hpp>
 #define myDeviceMemorySpace Kokkos::Experimental::OpenMPTargetSpace
-#define myPolicy Kokkos::RangePolicy<myDeviceMemorySpace::execution_space>
+#define myPolicy Kokkos::RangePolicy<myDeviceMemorySpace::execution_space,Kokkos::Schedule<Kokkos::Dynamic>>
 #define USE_KOKKOS
 #endif
 

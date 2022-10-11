@@ -105,11 +105,15 @@ void KernelAB_AOS_Base::timestepForce(myViewPDF dstrb_src, myViewPDF dstrb_tgt, 
    return;
 }
 #else
+#ifdef USE_SYCL
+void KernelAB_AOS_Base::timestepForce(Pdf* dstrb_src, Pdf* dstrb_tgt, int startIdx, int countIdx,sycl::queue q)
+#else
 void KernelAB_AOS_Base::timestepForce(Pdf* dstrb_src, Pdf* dstrb_tgt, int startIdx, int countIdx)
+#endif
 {
    Pdf f[3] = {_GRAVITY_, 0.0, 0.0};
 #ifdef USE_SYCL
-q_.parallel_for(sycl::range<1>{size_t(countIdx)},sycl::id<1>{size_t(startIdx)},[=,adjacency_d_=this->geometry_.adjacency_d_,stencil_d_=this->stencil_d_,weight_d_=this->weight_d_](sycl::id<1> fluidIdx)
+q.parallel_for(sycl::range<1>{size_t(countIdx)},sycl::id<1>{size_t(startIdx)},[=,adjacency_d_=this->geometry_.adjacency_d_,stencil_d_=this->stencil_d_,weight_d_=this->weight_d_](sycl::id<1> fluidIdx)
 #else
    for (int fluidIdx=startIdx; fluidIdx<startIdx+countIdx; fluidIdx++)
 #endif
