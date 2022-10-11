@@ -58,7 +58,7 @@
 ## 4. Compile the mini app.
 ```
 	cd ~/MINIAPP
-	cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_STANDARD=17 -DKokkos_SYCL=ON -S src/ -B test_build/
+	cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_STANDARD=17 -DKokkos_SYCL=ON -DSYCL_DEVICE_NV_A100=ON -DSYCL_POLARIS=ON -S src/ -B test_build/
 	make -C test_build/ -j16
 ```
 # III. LBM Proxy App (SYCL) on Polaris
@@ -78,7 +78,7 @@
 	module load cudatoolkit-standalone/11.6.2
 	export MPICH_GPU_SUPPORT_ENABLED=1
 	cd ~/MINIAPP
-	cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_STANDARD=17 -DSYCL=ON -S src/ -B test_build/
+	cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_STANDARD=17 -DSYCL=ON -DSYCL_DEVICE_NV_A100=ON -DSYCL_POLARIS=ON -S src/ -B test_build/
 	make -C test_build/ -j16
 ```
 # IV. Run
