@@ -73,8 +73,7 @@
 ## 3. Go to computing node and compile.
 ```
 	qsub -I -l select=[number of nodes] -l walltime=[hrs:min:sec] -A [account name] -q [queue name]
-	module load cmake mpiwrappers/cray-mpich-llvm llvm-sycl/2022-06
-	module load cudatoolkit-standalone/11.6.2
+	module load cmake oneapi mpiwrappers/cray-mpich-oneapi
 	export MPICH_GPU_SUPPORT_ENABLED=1
 	cd ~/MINIAPP
 	cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_STANDARD=17 -DSYCL=ON -DSYCL_DEVICE_NV_A100=ON -DSYCL_POLARIS=ON -S src/ -B test_build/
