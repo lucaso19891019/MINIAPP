@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.23)
 project(lbm-proxy-app)
 
-if(Kokkos_SYCL OR Kokkos_CUDA OR Kokkos_OMPT)
-set(Kokkos_DIR "$ENV{KOKKOS_HOME}/lib64/cmake/Kokkos")
+if(Kokkos_SYCL OR USE_KOKKOS_CUDA OR Kokkos_OMPT)
+set(USE_KOKKOS ON)
 find_package(Kokkos REQUIRED)
 endif()
 
@@ -44,8 +44,8 @@ set(SOURCE_FILES ${top_SRCS} ${geometries_SRCS} ${kernels_SRCS} ${lattices_SRCS}
 
 add_executable(lbm-proxy-app ${SOURCE_FILES})
 
-if(Kokkos_SYCL OR Kokkos_CUDA OR Kokkos_OMPT)
-target_link_libraries(lbm-proxy-app Kokkos::kokkos)
+if(USE_KOKKOS)
+  target_link_libraries(lbm-proxy-app Kokkos::kokkos)
 endif()
 
 if(Kokkos_SYCL OR SYCL)
@@ -91,7 +91,7 @@ elseif(Kokkos_SYCL)
 elseif(Kokkos_OMPT)
 	target_compile_options(lbm-proxy-app PUBLIC -DSOA -DUSE_KOKKOS_OPENMPTARGET "${OMPT_FLAGS}")
 	target_link_options(lbm-proxy-app PUBLIC "${OMPT_FLAGS}")
-elseif(Kokkos_CUDA)
+elseif(USE_KOKKOS_CUDA)
 	target_compile_options(lbm-proxy-app PUBLIC -DSOA -DUSE_KOKKOS_CUDA)
 endif()
 
